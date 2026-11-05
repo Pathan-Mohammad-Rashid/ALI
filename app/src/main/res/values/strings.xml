@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">ALI -• Advanced Learning Interface</string>
+    <string name="agent_short_name">ALI</string>
+    <string name="agent_full_title">ALI -• Advanced Learning Interface</string>
+    <string name="accessibility_service_label">ALI Contextual Assistant</string>
+    <string name="accessibility_service_description">Allows ALI to help with day-to-day mobile actions locally on your device without ever sending screen data anywhere.</string>
+</resources>

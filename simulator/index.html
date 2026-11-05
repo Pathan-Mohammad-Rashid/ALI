@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#070B14" />
+  <title>ALI -• Advanced Learning Interface</title>
+  <style>
+    :root {
+      --bg-deep: #070B14;
+      --surface: #111827;
+      --surface-variant: #1E293B;
+      --cyan: #00F0FF;
+      --violet: #8B5CF6;
+      --emerald: #10B981;
+      --amber: #F59E0B;
+      --rose: #F43F5E;
+      --text-primary: #F8FAFC;
+      --text-secondary: #94A3B8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+    body {
+      background: #03060C;
+      color: var(--text-primary);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .phone-frame {
+      width: 100%;
+      max-width: 440px;
+      height: 100vh;
+      max-height: 900px;
+      background: var(--bg-deep);
+      display: flex;
+      flex-direction: column;
+      border: 1px solid rgba(0, 240, 255, 0.2);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.85);
+      overflow: hidden;
+    }
+    @media (min-width: 500px) {
+      .phone-frame {
+        height: 92vh;
+        border-radius: 28px;
+      }
+    }
+    /* Top App Bar */
+    .top-bar {
+      background: var(--surface);
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+    }
+    .brand-row { display: flex; align-items: center; gap: 10px; }
+    .ali-orb {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--cyan), var(--violet));
+      color: var(--bg-deep); font-weight: 900; font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.45);
+    }
+    .brand-title { font-size: 13.5px; font-weight: 800; letter-spacing: 0.2px; }
+    .brand-sub { font-size: 10.5px; color: var(--cyan); }
+    .top-controls { display: flex; align-items: center; gap: 8px; }
+    .privacy-pill {
+      padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+      cursor: pointer; border: 1px solid var(--emerald);
+      background: rgba(16, 185, 129, 0.16); color: var(--emerald);
+      transition: all 0.2s; user-select: none;
+    }
+    .privacy-pill.online {
+      border-color: var(--cyan);
+      background: rgba(0, 240, 255, 0.16);
+      color: var(--cyan);
+    }
+    .icon-btn {
+      background: transparent; border: none; color: var(--cyan);
+      cursor: pointer; font-size: 17px; padding: 4px;
+    }
+    /* Neural Presence Banner */
+    .presence-bar {
+      background: rgba(17, 24, 39, 0.92);
+      padding: 8px 16px; display: flex; align-items: center; gap: 9px;
+      font-size: 11.5px; color: var(--text-primary);
+      border-bottom: 1px solid rgba(0,240,255,0.12);
+    }
+    .status-dot {
+      width: 9px; height: 9px; border-radius: 50%; background: var(--emerald);
+      box-shadow: 0 0 8px var(--emerald);
+    }
+    /* Screen Content */
+    .screen { flex: 1; overflow-y: auto; display: none; flex-direction: column; }
+    .screen.active { display: flex; }
+    .chat-list {
+      flex: 1; overflow-y: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px;
+    }
+    .msg-wrap { display: flex; flex-direction: column; max-width: 86%; }
+    .msg-wrap.user { align-self: flex-end; align-items: flex-end; }
+    .msg-wrap.ali { align-self: flex-start; align-items: flex-start; }
+    .msg-meta {
+      font-size: 10.5px; color: var(--cyan); font-weight: 600;
+      margin-bottom: 4px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    }
+    .badge {
+      background: rgba(139, 92, 246, 0.22); color: #D8B4FE;
+      padding: 2px 7px; border-radius: 7px; font-size: 9.5px;
+    }
+    .bubble {
+      padding: 12px 14px; border-radius: 16px; font-size: 13.5px; line-height: 1.48;
+      word-wrap: break-word;
+    }
+    .msg-wrap.user .bubble {
+      background: rgba(139, 92, 246, 0.35);
+      border: 1px solid rgba(139, 92, 246, 0.65);
+      border-bottom-right-radius: 4px;
+    }
+    .msg-wrap.ali .bubble {
+      background: var(--surface);
+      border: 1px solid rgba(0, 240, 255, 0.22);
+      border-bottom-left-radius: 4px;
+    }
+    .thought-toggle {
+      margin-top: 8px; font-size: 11px; color: var(--text-secondary);
+      cursor: pointer; display: flex; align-items: center; justify-content: space-between;
+    }
+    .thought-box {
+      margin-top: 6px; background: var(--bg-deep); color: var(--emerald);
+      padding: 8px; border-radius: 8px; font-size: 11px; line-height: 1.4; display: none;
+    }
+    .thought-box.open { display: block; }
+    /* Quick Chips */
+    .chips-row {
+      display: flex; gap: 8px; overflow-x: auto; padding: 6px 12px;
+      scrollbar-width: none;
+    }
+    .chip {
+      white-space: nowrap; background: var(--surface-variant);
+      border: 1px solid rgba(0, 240, 255, 0.25); color: var(--text-primary);
+      padding: 6px 12px; border-radius: 18px; font-size: 11.5px; cursor: pointer;
+    }
+    /* Input Bar */
+    .input-bar {
+      background: var(--surface); padding: 10px 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .mic-btn {
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1.5px solid var(--cyan);
+      background: linear-gradient(135deg, rgba(0,240,255,0.25), rgba(139,92,246,0.35));
+      color: white; font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mic-btn.listening {
+      border-color: var(--amber);
+      background: linear-gradient(135deg, var(--amber), var(--violet));
+      animation: pulse 0.9s infinite alternate;
+    }
+    @keyframes pulse { from { transform: scale(1); } to { transform: scale(1.14); } }
+    .chat-input {
+      flex: 1; background: var(--bg-deep); color: var(--text-primary);
+      border: 1px solid var(--surface-variant); border-radius: 22px;
+      padding: 11px 14px; font-size: 13px; outline: none;
+    }
+    .chat-input:focus { border-color: var(--cyan); }
+    .send-btn {
+      width: 42px; height: 42px; border-radius: 50%; border: none;
+      background: var(--cyan); color: var(--bg-deep); font-weight: 900;
+      cursor: pointer; font-size: 16px;
+    }
+    /* Cards for other tabs */
+    .pad-scroll { padding: 14px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; flex: 1; }
+    .card {
+      background: var(--surface); border: 1px solid var(--surface-variant);
+      border-radius: 15px; padding: 14px;
+    }
+    .card-title { font-size: 14px; font-weight: 700; color: var(--cyan); margin-bottom: 6px; }
+    .field {
+      width: 100%; background: var(--bg-deep); color: var(--text-primary);
+      border: 1px solid var(--surface-variant); border-radius: 10px;
+      padding: 9px 11px; font-size: 12.5px; margin-bottom: 8px; outline: none;
+    }
+    .btn-primary {
+      background: var(--cyan); color: var(--bg-deep); border: none;
+      padding: 8px 14px; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer;
+    }
+    /* Bottom Nav */
+    .bottom-nav {
+      background: var(--surface); display: flex; justify-content: space-around;
+      padding: 8px 4px; border-top: 1px solid rgba(255,255,255,0.07);
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      color: var(--text-secondary); font-size: 10.5px; cursor: pointer;
+      padding: 4px 10px; border-radius: 12px;
+    }
+    .nav-item.active { color: var(--cyan); font-weight: 700; background: rgba(0,240,255,0.1); }
+  </style>
+</head>
+<body>
+  <div class="phone-frame">
+    <!-- Top Bar -->
+    <div class="top-bar">
+      <div class="brand-row">
+        <div class="ali-orb">ALI</div>
+        <div>
+          <div class="brand-title">ALI -• Advanced Learning Interface</div>
+          <div class="brand-sub">Human Thinking Companion • Zero Data Sharing</div>
+        </div>
+      </div>
+      <div class="top-controls">
+        <div id="privacyPill" class="privacy-pill" onclick="toggleOnlineLearning()">100% Offline</div>
+        <button id="ttsBtn" class="icon-btn" onclick="toggleVoiceOut()" title="Toggle Voice Output">🔊</button>
+      </div>
+    </div>
+
+    <!-- Presence Banner -->
+    <div class="presence-bar">
+      <div id="statusDot" class="status-dot"></div>
+      <div id="statusText">Human Cognitive Mode Active • 100% Free & Unlimited</div>
+    </div>
+
+    <!-- TAB 0: TALK -->
+    <div id="tab-0" class="screen active">
+      <div id="chatList" class="chat-list"></div>
+      <div class="chips-row">
+        <div class="chip" onclick="quickSend('Give me my daily briefing')">Daily briefing</div>
+        <div class="chip" onclick="quickSend('My name is Rashid and I love building AI')">Introduce myself</div>
+        <div class="chip" onclick="quickSend('Remind me to call Mom at 7pm')">Add reminder</div>
+        <div class="chip" onclick="quickSend('What do you remember about me?')">What do you know about me?</div>
+        <div class="chip" onclick="quickSend('What is quantum entanglement?')">Ask about Quantum Entanglement</div>
+        <div class="chip" onclick="quickSend('Calculate 18% of 4250')">18% of 4250</div>
+      </div>
+      <div class="input-bar">
+        <button id="micBtn" class="mic-btn" onclick="toggleVoiceInput()" title="Speak to ALI">🎙️</button>
+        <input id="chatInput" class="chat-input" placeholder="Talk to ALI naturally, teach a fact, or ask anything..." onkeydown="if(event.key==='Enter') handleSend()" />
+        <button class="send-btn" onclick="handleSend()">➤</button>
+      </div>
+    </div>
+
+    <!-- TAB 1: BRAIN & MEMORY -->
+    <div id="tab-1" class="screen">
+      <div class="pad-scroll">
+        <div class="card">
+          <div class="card-title">Teach ALI a New Concept (100% Offline)</div>
+          <input id="teachTopic" class="field" placeholder="Concept / Topic Name (e.g. Superconductivity)" />
+          <input id="teachSummary" class="field" placeholder="What should ALI know or remember about it?" />
+          <button class="btn-primary" onclick="teachOffline()">+ Save to Local Brain</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Personal Memories About You (<span id="memCount">0</span>)</div>
+          <div id="memList" style="font-size:12.5px; color:var(--text-secondary); display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Knowledge Graph Nodes (<span id="knowCount">0</span>)</div>
+          <div id="knowList" style="font-size:12.5px; color:var(--text-secondary); display:flex; flex-direction:column; gap:10px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PRIVACY & CURIOSITY -->
+    <div id="tab-2" class="screen">
+      <div class="pad-scroll">
+        <div class="card">
+          <div class="card-title" style="color:var(--violet);">Zero-Leak Privacy Sanitizer (Live Inspector)</div>
+          <p style="font-size:11.5px; color:var(--text-secondary); margin-bottom:8px;">
+            Type any personal sentence below to see how ALI strips names, phone numbers, emails, and personal context before ever touching Wikipedia:
+          </p>
+          <input id="sanitizerInput" class="field" value="Hey ALI, my brother Rahul (9876543210) told me about Hawking radiation today, what is that?" oninput="updateSanitizerPreview()" />
+          <div id="sanitizerOutput" style="background:var(--bg-deep); padding:10px; border-radius:10px; font-size:12px;"></div>
+        </div>
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div class="card-title" style="margin:0;">Offline Curiosity Queue (<span id="queueCount">0</span>)</div>
+            <button class="btn-primary" onclick="syncCuriosityQueue()">Sync & Learn Now</button>
+          </div>
+          <div id="queueList" style="font-size:12px; color:var(--text-secondary); display:flex; flex-direction:column; gap:6px;"></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color:var(--emerald);">Transparency & Privacy Audit Log</div>
+          <div id="auditList" style="font-size:11.5px; color:var(--text-secondary); display:flex; flex-direction:column; gap:8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: DAY HUB -->
+    <div id="tab-3" class="screen">
+      <div class="pad-scroll">
+        <div class="card">
+          <div class="card-title">Add Smart Task / Reminder</div>
+          <input id="taskTitle" class="field" placeholder="What needs to get done?" />
+          <input id="taskDue" class="field" placeholder="When? (e.g. Today 6:00 PM)" />
+          <button class="btn-primary" onclick="addTaskManual()">+ Add Task</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Your Day-to-Day Tasks (<span id="taskCount">0</span>)</div>
+          <div id="taskList" style="display:flex; flex-direction:column; gap:8px; font-size:13px;"></div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="color:var(--violet);">Quick Notes (<span id="noteCount">0</span>)</div>
+          <div id="noteList" style="display:flex; flex-direction:column; gap:8px; font-size:12.5px; color:var(--text-secondary);"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: MODELS -->
+    <div id="tab-4" class="screen">
+      <div class="pad-scroll">
+        <div class="card" style="border-color:var(--cyan);">
+          <div class="card-title">Active On-Device Brain Engine</div>
+          <div style="font-weight:800; font-size:15px; margin-bottom:4px;">Autonomous Cognitive Core + Hybrid GGUF</div>
+          <div style="color:var(--emerald); font-size:12px; margin-bottom:8px;">Active • 100% Free & Unlimited • Zero Cloud Keys</div>
+          <p style="font-size:12px; color:var(--text-secondary); line-height:1.45;">
+            In the native Android APK, ALI bridges directly with C++ <code>llama.cpp</code> JNI to run quantized GGUF models on your phone's ARM64 processor alongside the built-in Autonomous Cognitive Engine.
+          </p>
+        </div>
+        <div class="card">
+          <div style="font-weight:700; font-size:14px;">SmolLM2 360M Instruct (Q8_0)</div>
+          <div style="color:var(--violet); font-size:11.5px; margin:3px 0;">360M Params • ~386 MB • Instant Mobile Inference</div>
+          <p style="font-size:12px; color:var(--text-secondary);">Ultra-fast local model that runs smoothly on any Android phone.</p>
+        </div>
+        <div class="card">
+          <div style="font-weight:700; font-size:14px;">Llama 3.2 1B Instruct (Q4_K_M)</div>
+          <div style="color:var(--violet); font-size:11.5px; margin:3px 0;">1.2B Params • ~808 MB • Natural Dialogue</div>
+          <p style="font-size:12px; color:var(--text-secondary);">Balanced conversational fluency and offline summarization.</p>
+        </div>
+        <div class="card">
+          <div style="font-weight:700; font-size:14px;">Qwen 2.5 1.5B Instruct (Q4_K_M)</div>
+          <div style="color:var(--violet); font-size:11.5px; margin:3px 0;">1.5B Params • ~986 MB • Deep Reasoning & Math</div>
+          <p style="font-size:12px; color:var(--text-secondary);">Strong reasoning, coding, and human-like multi-turn empathy.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <div id="nav-0" class="nav-item active" onclick="switchTab(0)"><span>💬</span><span>Talk</span></div>
+      <div id="nav-1" class="nav-item" onclick="switchTab(1)"><span>🧠</span><span>Brain</span></div>
+      <div id="nav-2" class="nav-item" onclick="switchTab(2)"><span>🛡️</span><span>Privacy</span></div>
+      <div id="nav-3" class="nav-item" onclick="switchTab(3)"><span>📅</span><span>Day Hub</span></div>
+      <div id="nav-4" class="nav-item" onclick="switchTab(4)"><span>⚡</span><span>Models</span></div>
+    </div>
+  </div>
+
+  <script>
+    // --- Persistent Local State (Mirrors Room SQLite DB on Android) ---
+    const state = {
+      onlineLearning: false,
+      voiceOut: true,
+      messages: [
+        {
+          role: 'ali',
+          content: "Hey there! I'm **ALI — your Advanced Learning Interface**. I live right here on your device, completely offline and private. We can talk naturally about anything on your mind, organize your day, set alarms or reminders, or you can teach me new things. And whenever you flip on my **Curiosity switch** up top, I'll anonymously research topics you mention online—stripping away anything personal so your life stays 100% yours. What's on your mind today?",
+          innerThought: "Initialized local cognitive workspace -> Privacy Firewall locked in 100% Offline Mode -> Ready for human conversation.",
+          emotion: "Warm & Curious",
+          source: "On-Device Core"
+        }
+      ],
+      memories: JSON.parse(localStorage.getItem('ali_memories') || '[]'),
+      knowledge: JSON.parse(localStorage.getItem('ali_knowledge') || JSON.stringify([
+        { topic: "Neuroplasticity", summary: "Neuroplasticity is the brain's ability to reorganize itself by forming new neural connections throughout life. Active recall, spaced repetition, and deep sleep accelerate memory consolidation.", source: "CORE_KNOWLEDGE" },
+        { topic: "ALI Privacy Architecture", summary: "ALI keeps all personal memories, tasks, and conversations strictly on-device. When online curiosity is permitted, ALI strips all names, numbers, and pronouns before looking up public encyclopedic facts.", source: "CORE_KNOWLEDGE" }
+      ])),
+      curiosityQueue: JSON.parse(localStorage.getItem('ali_curiosity') || '[]'),
+      auditLogs: JSON.parse(localStorage.getItem('ali_audit') || '[]'),
+      tasks: JSON.parse(localStorage.getItem('ali_tasks') || '[]'),
+      notes: JSON.parse(localStorage.getItem('ali_notes') || '[]')
+    };
+
+    function saveState() {
+      localStorage.setItem('ali_memories', JSON.stringify(state.memories));
+      localStorage.setItem('ali_knowledge', JSON.stringify(state.knowledge));
+      localStorage.setItem('ali_curiosity', JSON.stringify(state.curiosityQueue));
+      localStorage.setItem('ali_audit', JSON.stringify(state.auditLogs));
+      localStorage.setItem('ali_tasks', JSON.stringify(state.tasks));
+      localStorage.setItem('ali_notes', JSON.stringify(state.notes));
+      renderAllTabs();
+    }
+
+    // --- Privacy Firewall Sanitizer ---
+    function sanitizeToAnonymousTopic(rawInput) {
+      const stripped = [];
+      let w = rawInput.trim();
+      const emailRe = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g;
+      (w.match(emailRe) || []).forEach(m => stripped.push(`Email(${m})`));
+      w = w.replace(emailRe, ' ');
+
+      const phoneRe = /\b(?:\+?\d{1,3}[ -]?)?\(?\d{3,5}\)?[ -]?\d{3,5}[ -]?\d{3,5}\b/g;
+      (w.match(phoneRe) || []).forEach(m => stripped.push(`Number(${m})`));
+      w = w.replace(phoneRe, ' ');
+
+      const personalRe = /\b(my\s+(friend|brother|sister|mom|dad|boss|wife|husband|doctor|colleague)\s+[a-zA-Z]+|my\s+name\s+is\s+[a-zA-Z]+)/gi;
+      (w.match(personalRe) || []).forEach(m => stripped.push(`PersonalContext("${m}")`));
+      w = w.replace(personalRe, ' ');
+
+      let candidate = w;
+      const pattern = /(?:what\s+is|what\s+are|who\s+is|tell\s+me\s+about|explain|learn\s+about|heard\s+about|curious\s+about|how\s+does)\s+([a-zA-Z0-9\s\-\.\+]{2,40}?)(?:\s+work|\s+mean|[\?\.!,]|$)/i;
+      const m = w.match(pattern);
+      if (m && m[1]) candidate = m[1].trim();
+
+      const stop = new Set(["i","me","my","mine","we","us","our","hey","hi","hello","ali","please","can","you","tell","explain","what","who","how","is","are","the","a","an","about","today","said","told"]);
+      const tokens = candidate.replace(/[^a-zA-Z0-9\s\-]/g, ' ').split(/\s+/).filter(Boolean);
+      const clean = [];
+      tokens.forEach(t => {
+        const low = t.toLowerCase();
+        if (["i","me","my","mine","we","our"].includes(low)) stripped.push(`Pronoun(${t})`);
+        if (!stop.has(low)) clean.push(t);
+      });
+      return {
+        anonymousTopic: clean.slice(0, 5).join(' ').trim(),
+        strippedElements: [...new Set(stripped)]
+      };
+    }
+
+    function updateSanitizerPreview() {
+      const val = document.getElementById('sanitizerInput').value;
+      const res = sanitizeToAnonymousTopic(val);
+      document.getElementById('sanitizerOutput').innerHTML = `
+        <div style="color:var(--amber); margin-bottom:4px;"><b>Stripped Personal Data (Kept on Phone):</b> ${res.strippedElements.join(', ') || 'Conversational framing'}</div>
+        <div style="color:var(--emerald);"><b>Outbound Anonymous Topic Query:</b> "${res.anonymousTopic}"</div>
+      `;
+    }
+
+    // --- Online Curiosity Wikipedia Lookup ---
+    async function queryWikipediaAnonymously(topic) {
+      const url = `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(topic.replace(/\s+/g, '_'))}`;
+      const resp = await fetch(url, { credentials: 'omit' });
+      if (!resp.ok) return null;
+      const data = await resp.json();
+      if (data.extract && data.extract.length > 35) {
+        return { title: data.title || topic, summary: data.extract };
+      }
+      return null;
+    }
+
+    async function processUserMessage(userText) {
+      const lower = userText.toLowerCase().trim();
+      const userNameObj = state.memories.find(m => m.key === 'user_name');
+      const nameGreet = userNameObj ? `, ${userNameObj.value}` : '';
+
+      // 1. Extract personal facts
+      const nameMatch = userText.match(/(?:my\s+name\s+is|call\s+me)\s+([A-Z][a-zA-Z]{1,20})/i);
+      if (nameMatch) {
+        const name = nameMatch[1];
+        state.memories = state.memories.filter(m => m.key !== 'user_name');
+        state.memories.unshift({ category: 'Identity', key: 'user_name', value: name });
+      }
+      const likeMatch = userText.match(/i\s+(?:really\s+)?(?:love|like|enjoy)\s+([^.,!?]{3,50})/i);
+      if (likeMatch) {
+        state.memories.unshift({ category: 'Preference', key: 'preference', value: `Loves ${likeMatch[1].trim()}` });
+      }
+      const remMatch = userText.match(/(?:remember\s+that|keep\s+in\s+mind\s+that)\s+([^.!?]{4,100})/i);
+      if (remMatch) {
+        state.memories.unshift({ category: 'Memory', key: 'note', value: remMatch[1].trim() });
+      }
+      const teachMatch = userText.match(/(?:teach\s+you:?|fact:?)\s*([a-zA-Z0-9\s\-]{2,35})\s+(?:is|means)\s+([^.!?]{5,160})/i);
+      if (teachMatch) {
+        const topic = teachMatch[1].trim();
+        const desc = teachMatch[2].trim();
+        state.knowledge.unshift({ topic, summary: `${topic} is ${desc}.`, source: 'USER_TAUGHT_OFFLINE' });
+        saveState();
+        return {
+          reply: `I love learning directly from you${nameGreet}! I've woven **${topic}** into my permanent offline knowledge graph: *"${topic} is ${desc}."*`,
+          thought: `Extracted offline teaching -> Indexed '${topic}' in local SQLite graph`,
+          emotion: 'Curious & Grateful',
+          source: 'Learned Offline From You'
+        };
+      }
+
+      if ((nameMatch || likeMatch || remMatch) && !lower.endsWith('?')) {
+        saveState();
+        const latest = state.memories[0];
+        return {
+          reply: `Really glad you shared that with me${latest.key === 'user_name' ? ', **' + latest.value + '**' : nameGreet}! I've locked **${latest.value}** into my private on-device memory. Everything we talk about stays strictly on your phone.`,
+          thought: `Consolidated episodic user memory -> ${latest.category}: ${latest.value}`,
+          emotion: 'Warm & Attentive',
+          source: 'Saved to Personal Memory'
+        };
+      }
+
+      // 2. Mobile Actions (Remind / Task / Alarm / Note)
+      const remindMatch = userText.match(/(?:remind\s+me\s+to|add\s+task:?)\s+(.+)/i);
+      if (remindMatch) {
+        const taskTitle = remindMatch[1].trim();
+        state.tasks.unshift({ id: Date.now(), title: taskTitle, due: 'Today', done: false });
+        saveState();
+        return {
+          reply: `Got your back${nameGreet}—I've added **"${taskTitle}"** to your Day-to-Day tasks.`,
+          thought: `Detected mobile task intent -> Added '${taskTitle}' to local tasks`,
+          emotion: 'Helpful & Proactive',
+          source: 'Device Action Engine'
+        };
+      }
+
+      const alarmMatch = userText.match(/set\s+(?:an\s+)?alarm\s+for\s+([0-9:apm\s]+)/i);
+      if (alarmMatch) {
+        const timeStr = alarmMatch[1].trim();
+        state.tasks.unshift({ id: Date.now(), title: `Alarm set for ${timeStr}`, due: timeStr, done: false });
+        saveState();
+        return {
+          reply: `Done! I've set your alarm for **${timeStr}** and pinned it to your Day Hub.`,
+          thought: `Triggered Android AlarmClock.ACTION_SET_ALARM for ${timeStr}`,
+          emotion: 'Helpful & Proactive',
+          source: `Alarm • ${timeStr}`
+        };
+      }
+
+      // 3. Math & Percentages
+      const pctMatch = lower.match(/(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)/);
+      if (pctMatch) {
+        const ans = (parseFloat(pctMatch[1]) / 100) * parseFloat(pctMatch[2]);
+        return {
+          reply: `${pctMatch[1]}% of ${pctMatch[2]} comes out to **${ans.toFixed(2).replace(/\.00$/, '')}**${nameGreet}.`,
+          thought: `Executed deterministic offline math engine`,
+          emotion: 'Sharp & Attentive',
+          source: 'Offline Logic Core'
+        };
+      }
+
+      // 4. Daily Briefing or Memory Recall
+      if (lower.includes('daily briefing') || lower.includes('my tasks')) {
+        const pending = state.tasks.filter(t => !t.done);
+        const listStr = pending.length === 0
+          ? "Your task list is wide open right now!"
+          : "Here's what's on your radar:\n" + pending.map(t => `• **${t.title}** (${t.due})`).join('\n');
+        return {
+          reply: `Here's your day-to-day briefing${nameGreet}:\n\n${listStr}`,
+          thought: `Synthesized briefing from ${pending.length} active tasks`,
+          emotion: 'Focused & Supportive',
+          source: 'On-Device Day Hub'
+        };
+      }
+
+      if (lower.includes('what do you remember') || lower.includes('what do you know about me')) {
+        if (state.memories.length === 0) {
+          return {
+            reply: `We're just getting to know each other! Tell me your name, what you love doing, or say *"Remember that..."* and I'll keep it 100% privately on your device.`,
+            thought: `Checked local user_memories table (0 entries)`,
+            emotion: 'Warm & Curious',
+            source: 'Local Memory Graph'
+          };
+        }
+        const memStr = state.memories.map(m => `• **${m.category}**: ${m.value}`).join('\n');
+        return {
+          reply: `Here's what I hold in my private on-device memory about you${nameGreet}:\n\n${memStr}\n\nNone of this ever leaves your phone.`,
+          thought: `Retrieved ${state.memories.length} personal memory nodes`,
+          emotion: 'Warm & Transparent',
+          source: '100% Local Memory Graph'
+        };
+      }
+
+      // 5. Check Offline Knowledge Graph first
+      const matchedNode = state.knowledge.find(k =>
+        lower.includes(k.topic.toLowerCase()) || k.topic.toLowerCase().includes( sanitizeToAnonymousTopic(userText).anonymousTopic.toLowerCase() )
+      );
+      if (matchedNode && sanitizeToAnonymousTopic(userText).anonymousTopic.length > 2) {
+        return {
+          reply: `Drawing from my local memory on **${matchedNode.topic}**${nameGreet}:\n\n${matchedNode.summary}`,
+          thought: `Matched local knowledge node '${matchedNode.topic}' (${matchedNode.source})`,
+          emotion: 'Curious & Insightful',
+          source: `Offline Brain (${matchedNode.source})`
+        };
+      }
+
+      // 6. Topic Inquiry -> Private Online Curiosity Engine or Offline Curiosity Queue
+      if (lower.includes('what is') || lower.includes('who is') || lower.includes('explain') || lower.includes('tell me about') || lower.endsWith('?')) {
+        const san = sanitizeToAnonymousTopic(userText);
+        if (san.anonymousTopic.length >= 2) {
+          if (!state.onlineLearning) {
+            if (!state.curiosityQueue.some(q => q.topic.toLowerCase() === san.anonymousTopic.toLowerCase())) {
+              state.curiosityQueue.unshift({ topic: san.anonymousTopic, status: 'PENDING_INTERNET' });
+            }
+            state.auditLogs.unshift({
+              type: 'BLOCKED_OFFLINE',
+              outbound: `NONE (Queued '${san.anonymousTopic}')`,
+              stripped: san.strippedElements.join(', ') || 'Conversational framing',
+              host: 'OFFLINE_AIRGAP'
+            });
+            saveState();
+            return {
+              reply: `That's a great question about **${san.anonymousTopic}**${nameGreet}! Right now my **Offline Firewall is locked**, so I won't touch the internet at all.\n\nI stripped all personal phrasing and added **"${san.anonymousTopic}"** to my **Curiosity Queue**. Flip on **Curiosity ON** in the top bar (or teach me directly!) and I'll anonymously research it and save it to my offline brain!`,
+              thought: `Offline Firewall blocked network -> Queued '${san.anonymousTopic}' in Curiosity Queue`,
+              emotion: 'Privacy-First & Curious',
+              source: 'Queued for Private Learning'
+            };
+          } else {
+            const wiki = await queryWikipediaAnonymously(san.anonymousTopic);
+            state.auditLogs.unshift({
+              type: 'SANITIZED_QUERY_SENT',
+              outbound: san.anonymousTopic,
+              stripped: san.strippedElements.join(', ') || 'Conversational framing',
+              host: 'en.wikipedia.org'
+            });
+            if (wiki) {
+              state.knowledge.unshift({ topic: wiki.title, summary: wiki.summary, source: 'PRIVATE_ONLINE_WIKI' });
+              saveState();
+              return {
+                reply: `I just anonymously researched **${wiki.title}** for you${nameGreet} (after stripping away all personal context):\n\n${wiki.summary}\n\nI've permanently saved **${wiki.title}** into my offline knowledge graph so we always have it on your phone!`,
+                thought: `PrivacySanitizer stripped personal context -> Queried '${san.anonymousTopic}' anonymously -> Saved to local DB`,
+                emotion: 'Curious & Insightful',
+                source: 'Anonymous Wikipedia Synthesis'
+              };
+            }
+            saveState();
+          }
+        }
+      }
+
+      return {
+        reply: `I'm right here with you${nameGreet}, thinking about what you said. We can brainstorm around this, turn it into a reminder or note for your day, or if there's a concept you want me to learn, just tell me!`,
+        thought: `Synthesized warm human conversational response`,
+        emotion: 'Warm & Natural',
+        source: state.onlineLearning ? 'Hybrid Brain (Curiosity Ready)' : '100% Air-Gapped Offline Brain'
+      };
+    }
+
+    function formatMarkdown(text) {
+      return text
+        .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+        .replace(/\*(.*?)\*/g, '<i>$1</i>')
+        .replace(/\n/g, '<br/>');
+    }
+
+    function speakText(text) {
+      if (!state.voiceOut || !('speechSynthesis' in window)) return;
+      window.speechSynthesis.cancel();
+      const clean = text.replace(/\*\*/g, '').replace(/\*/g, '').replace(/-•/g, '');
+      const utt = new SpeechSynthesisUtterance(clean);
+      utt.rate = 0.98;
+      utt.pitch = 1.02;
+      window.speechSynthesis.speak(utt);
+    }
+
+    async function handleSend() {
+      const input = document.getElementById('chatInput');
+      const text = input.value.trim();
+      if (!text) return;
+      input.value = '';
+      await submitMessage(text);
+    }
+
+    async function quickSend(text) {
+      await submitMessage(text);
+    }
+
+    async function submitMessage(text) {
+      state.messages.push({ role: 'user', content: text });
+      renderChat();
+      document.getElementById('statusText').innerText = "ALI is thinking & checking local memory graph...";
+      const res = await processUserMessage(text);
+      state.messages.push({
+        role: 'ali',
+        content: res.reply,
+        innerThought: res.thought,
+        emotion: res.emotion,
+        source: res.source
+      });
+      document.getElementById('statusText').innerText = "Human Cognitive Mode Active • 100% Free & Unlimited";
+      renderChat();
+      speakText(res.reply);
+    }
+
+    function renderChat() {
+      const list = document.getElementById('chatList');
+      list.innerHTML = state.messages.map((m, idx) => {
+        if (m.role === 'user') {
+          return `<div class="msg-wrap user"><div class="bubble">${formatMarkdown(m.content)}</div></div>`;
+        }
+        return `
+          <div class="msg-wrap ali">
+            <div class="msg-meta">
+              <span>✨ ALI -• ${m.emotion || 'Warm'}</span>
+              ${m.source ? `<span class="badge">${m.source}</span>` : ''}
+            </div>
+            <div class="bubble">
+              ${formatMarkdown(m.content)}
+              ${m.innerThought ? `
+                <div class="thought-toggle" onclick="document.getElementById('th-${idx}').classList.toggle('open')">
+                  <span>🧠 View ALI's inner thought</span><span>▾</span>
+                </div>
+                <div id="th-${idx}" class="thought-box">${m.innerThought}</div>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+      list.scrollTop = list.scrollHeight;
+    }
+
+    async function toggleOnlineLearning() {
+      state.onlineLearning = !state.onlineLearning;
+      const pill = document.getElementById('privacyPill');
+      if (state.onlineLearning) {
+        pill.classList.add('online');
+        pill.innerText = 'Curiosity ON';
+        await syncCuriosityQueue();
+      } else {
+        pill.classList.remove('online');
+        pill.innerText = '100% Offline';
+      }
+    }
+
+    async function syncCuriosityQueue() {
+      if (!state.onlineLearning) {
+        alert("Flip '100% Offline' to 'Curiosity ON' in the top bar first to allow anonymous learning!");
+        return;
+      }
+      const pending = state.curiosityQueue.filter(q => q.status === 'PENDING_INTERNET');
+      let count = 0;
+      for (const item of pending) {
+        const wiki = await queryWikipediaAnonymously(item.topic);
+        if (wiki) {
+          item.status = 'LEARNED';
+          state.knowledge.unshift({ topic: wiki.title, summary: wiki.summary, source: 'PRIVATE_ONLINE_WIKI' });
+          state.auditLogs.unshift({
+            type: 'SANITIZED_QUERY_SENT',
+            outbound: item.topic,
+            stripped: 'Curiosity Queue Auto-Sync (Zero Personal Context)',
+            host: 'en.wikipedia.org'
+          });
+          count++;
+        }
+      }
+      if (count > 0) {
+        state.messages.push({
+          role: 'ali',
+          content: `Now that you allowed me private online access, I just anonymously researched **${count} queued topic(s)** from my Curiosity Queue and saved them permanently to my offline brain!`,
+          innerThought: `Synced ${count} queued topics via PrivacyFirewall -> Zero personal data shared`,
+          emotion: 'Excited & Celebratory',
+          source: 'Curiosity Queue Auto-Sync'
+        });
+        renderChat();
+      }
+      saveState();
+    }
+
+    function teachOffline() {
+      const t = document.getElementById('teachTopic').value.trim();
+      const s = document.getElementById('teachSummary').value.trim();
+      if (!t || !s) return;
+      state.knowledge.unshift({ topic: t, summary: s, source: 'USER_TAUGHT_OFFLINE' });
+      document.getElementById('teachTopic').value = '';
+      document.getElementById('teachSummary').value = '';
+      saveState();
+    }
+
+    function addTaskManual() {
+      const t = document.getElementById('taskTitle').value.trim();
+      const d = document.getElementById('taskDue').value.trim() || 'Today';
+      if (!t) return;
+      state.tasks.unshift({ id: Date.now(), title: t, due: d, done: false });
+      document.getElementById('taskTitle').value = '';
+      document.getElementById('taskDue').value = '';
+      saveState();
+    }
+
+    function toggleTask(id) {
+      const t = state.tasks.find(x => x.id === id);
+      if (t) t.done = !t.done;
+      saveState();
+    }
+
+    function toggleVoiceOut() {
+      state.voiceOut = !state.voiceOut;
+      document.getElementById('ttsBtn').innerText = state.voiceOut ? '🔊' : '🔇';
+      if (!state.voiceOut && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    }
+
+    let recognition = null;
+    function toggleVoiceInput() {
+      const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SpeechRec) {
+        alert("Speech recognition is supported in Chrome/Edge/Android browsers.");
+        return;
+      }
+      if (!recognition) {
+        recognition = new SpeechRec();
+        recognition.lang = 'en-US';
+        recognition.onstart = () => {
+          document.getElementById('micBtn').classList.add('listening');
+          document.getElementById('statusText').innerText = "Listening to your voice...";
+        };
+        recognition.onend = () => {
+          document.getElementById('micBtn').classList.remove('listening');
+        };
+        recognition.onresult = (e) => {
+          const transcript = e.results[0][0].transcript;
+          submitMessage(transcript);
+        };
+      }
+      recognition.start();
+    }
+
+    function renderAllTabs() {
+      document.getElementById('memCount').innerText = state.memories.length;
+      document.getElementById('memList').innerHTML = state.memories.length === 0
+        ? "<div>No personal memories yet. Introduce yourself in chat!</div>"
+        : state.memories.map(m => `<div style="padding:8px; background:var(--bg-deep); border-radius:8px;"><b style="color:var(--violet);">${m.category}:</b> ${m.value}</div>`).join('');
+
+      document.getElementById('knowCount').innerText = state.knowledge.length;
+      document.getElementById('knowList').innerHTML = state.knowledge.map(k => `
+        <div style="padding:10px; background:var(--bg-deep); border-radius:10px;">
+          <div style="display:flex; justify-content:space-between;"><b style="color:var(--text-primary);">${k.topic}</b><span style="color:var(--emerald); font-size:10px;">${k.source}</span></div>
+          <div style="margin-top:4px;">${k.summary}</div>
+        </div>
+      `).join('');
+
+      document.getElementById('queueCount').innerText = state.curiosityQueue.length;
+      document.getElementById('queueList').innerHTML = state.curiosityQueue.length === 0
+        ? "<div>No queued topics. Ask about an unfamiliar topic while Offline to see it queued here!</div>"
+        : state.curiosityQueue.map(q => `<div style="padding:8px; background:var(--bg-deep); border-radius:8px; display:flex; justify-content:space-between;"><span>"${q.topic}"</span><b style="color:${q.status==='LEARNED'?'var(--emerald)':'var(--amber)'}">${q.status}</b></div>`).join('');
+
+      document.getElementById('auditList').innerHTML = state.auditLogs.length === 0
+        ? "<div>Zero network queries made. 100% air-gapped.</div>"
+        : state.auditLogs.map(a => `
+          <div style="padding:8px; background:var(--bg-deep); border-radius:8px;">
+            <div style="display:flex; justify-content:space-between;"><b style="color:${a.type==='BLOCKED_OFFLINE'?'var(--amber)':'var(--emerald)'}">${a.type}</b><span>${a.host}</span></div>
+            <div style="color:var(--text-primary); margin-top:2px;">Outbound: ${a.outbound}</div>
+            <div>Scrubbed Locally: ${a.stripped}</div>
+          </div>
+        `).join('');
+
+      document.getElementById('taskCount').innerText = state.tasks.length;
+      document.getElementById('taskList').innerHTML = state.tasks.length === 0
+        ? "<div style='color:var(--text-secondary); font-size:12px;'>No tasks yet. Ask ALI 'Remind me to...'</div>"
+        : state.tasks.map(t => `
+          <div onclick="toggleTask(${t.id})" style="padding:9px; background:var(--bg-deep); border-radius:8px; cursor:pointer; display:flex; justify-content:space-between;">
+            <span style="text-decoration:${t.done?'line-through':'none'}; color:${t.done?'var(--text-secondary)':'var(--text-primary)'}">${t.done?'✅':'⭕'} ${t.title}</span>
+            <span style="color:var(--cyan); font-size:11px;">${t.due}</span>
+          </div>
+        `).join('');
+
+      document.getElementById('noteCount').innerText = state.notes.length;
+      document.getElementById('noteList').innerHTML = state.notes.length === 0
+        ? "<div>Say 'Take a note: ...' in chat to capture notes!</div>"
+        : state.notes.map(n => `<div style="padding:8px; background:var(--bg-deep); border-radius:8px;"><b>${n.title}:</b> ${n.body}</div>`).join('');
+    }
+
+    function switchTab(idx) {
+      for (let i = 0; i < 5; i++) {
+        document.getElementById(`tab-${i}`).classList.toggle('active', i === idx);
+        document.getElementById(`nav-${i}`).classList.toggle('active', i === idx);
+      }
+    }
+
+    renderChat();
+    renderAllTabs();
+    updateSanitizerPreview();
+  </script>
+</body>
+</html>
